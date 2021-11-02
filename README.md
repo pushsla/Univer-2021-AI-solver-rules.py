@@ -12,6 +12,29 @@
 
 **Любые формулы являются надстройкой над системой классов, доступных для непосредственной инициализации**
 
+Данные записи равносильны (1 по сути преобразуется в 2):
+```python
+slv.add_rule("!low_level -> high_level")
+slv.add_rule("!low_level & !high_level -> high_level")
+slv.add_rule("low_level & !runtimed & !typed -> asm")
+slv.add_rule("runtimed -> !asm")
+slv.add_rule("compiling -> !interpreting")
+slv.add_rule("compiling -> c++")
+slv.solve({"low_level", "runtimed"})
+```
+
+```python
+slv.add_rule(Rule(Not("low_level"), "high_level"))
+slv.add_rule(Rule(And(Not("low_level"), Not("high_level")), "high_level"))
+slv.add_rule(Rule(And("low_level", Not("runtimed", "typed")), "asm"))
+slv.add_rule(Rule("runtimed"), "!asm")
+slv.add_rule(Rule(Is("compiling"), "!interpreting"))
+slv.add_rule(Rule(And("compiling"), "c++"))
+
+e = Entity({"low_level", "runtimed"})
+slv.solve(e)
+```
+
 ### Общий синтаксис
 Правило вывода, вывод и посылка могут быть записаны при помощи любых символов.
 
