@@ -9,7 +9,14 @@ class Rule:
         if not isinstance(condition, Logic):
             self.__condition = parse_logic(condition)
 
-        self.__result = result
+        self.__result = result.replace(" ", "")
+
+    def simplify(self) -> set['Rule']:
+        result = set()
+        for r in self.__result.split('&'):
+            result.add(Rule(self.__condition, r))
+
+        return result
 
     @property
     def result(self):

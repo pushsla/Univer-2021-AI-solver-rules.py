@@ -4,7 +4,12 @@ from solver.Entity import Entity
 from solver.Exceptions import AxiomException
 
 
-class Logic:
+class Producting:
+    def product(self, entity: Entity) -> bool:
+        raise NotImplementedError()
+
+
+class Logic(Producting):
     def __init__(self, *conditions):
         self._conditions = conditions
         self.name = self.__class__.__name__
@@ -34,7 +39,10 @@ class And(Logic):
             else:
                 result = entity.is_true(cond)
         return result
-Is = And
+
+
+class Is(And):
+    pass
 
 
 class Or(Logic):

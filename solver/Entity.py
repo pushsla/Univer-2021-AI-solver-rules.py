@@ -12,6 +12,7 @@ class Entity:
             self.set_known(attr)
 
     def set_known(self, attr: str):
+        attr = attr.replace(" ", "")
         if isinstance(attr, str):
             if attr[0] == "!":
                 self.set_false(attr[1:])

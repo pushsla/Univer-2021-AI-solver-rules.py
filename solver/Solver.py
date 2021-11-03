@@ -9,7 +9,7 @@ class Solver:
 
     def add_rule(self, rule: [Rule, str]):
         rule = rule if isinstance(rule, Rule) else parse_rule(rule)
-        self.__rules.add(rule)
+        self.__rules |= rule.simplify()
         self.__rebuild_rules(rule.result)
 
     def solve(self, entity: [Entity, set]) -> Entity:
