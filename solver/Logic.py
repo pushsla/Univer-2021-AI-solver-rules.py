@@ -1,74 +1,79 @@
 from typing import Callable
 
 from solver.Entity import Entity
+from solver.Exceptions import AxiomException
 
 
 class Logic:
     def __init__(self, *conditions):
-        self.__conditions = conditions
-        self.name = "Logic"
-
-    def __make_production(self, conditions, entity: Entity) -> bool:
-        raise NotImplementedError()
-
-    def set_production(self, function: Callable):
-        self.__make_production = function
+        self._conditions = conditions
+        self.name = self.__class__.__name__
 
     def product(self, entity: Entity) -> bool:
-        return self.__make_production(self.__conditions, entity)
+        return self._product(entity)
+
+    @property
+    def conditions(self) -> set:
+        return set(self._conditions.copy())
+
+    def _product(self, entity: Entity) -> bool:
+        raise NotImplementedError()
 
     def __repr__(self):
-        return "{}{}".format(self.name, self.__conditions)
+        return "{}{}".format(self.name, self._conditions)
 
 
-def logical(function):
-    def wrapper(*conditions):
-        lg = Logic(*conditions)
-        lg.set_production(function)
-        lg.name = function.__name__
-        return lg
-
-    return wrapper
-
-
-@logical
-def And(conditions, entity: Entity) -> bool:
-    result = True
-    for cond in conditions:
-        if not result:
-            break
-        elif isinstance(cond, Logic):
-            result = cond.product(entity)
-        else:
-            result = entity.has_attr(cond)
-    return result
-
+class And(Logic):
+    def _product(self, entity: Entity) -> bool:
+        result = True
+        for cond in self._conditions:
+            if not result:
+                break
+            elif isinstance(cond, Logic):
+                result = cond.product(entity)
+            else:
+                result = entity.is_true(cond)
+        return result
 Is = And
 
-@logical
-def Or(conditions, entity: Entity) -> bool:
-    result = False
-    for cond in conditions:
-        if result:
-            break
-        elif isinstance(cond, Logic):
-            result = cond.product(entity)
-        else:
-            result = entity.has_attr(cond)
-    return result
+
+class Or(Logic):
+    def _product(self, entity: Entity) -> bool:
+        result = False
+        for cond in self._conditions:
+            if result:
+                break
+            elif isinstance(cond, Logic):
+                result = cond.product(entity)
+            else:
+                result = entity.is_true(cond)
+        return result
 
 
-@logical
-def Not(conditions, entity: Entity) -> bool:
-    result = True
-    for cond in conditions:
-        if not result:
-            break
-        elif isinstance(cond, Logic):
-            result = not cond.product(entity)
-        else:
-            result = not entity.has_attr(cond)
-    return result
+class Not(Logic):
+    def _product(self, entity: Entity) -> bool:
+        result = True
+        for cond in self._conditions:
+            if not result:
+                break
+            elif isinstance(cond, Logic):
+                result = not cond.product(entity)
+            else:
+                result = entity.is_false(cond)
+        return result
+
+
+class SoftNot(Logic):
+    def _product(self, entity: Entity) -> bool:
+        result = True
+        for cond in self._conditions:
+            if not result:
+                break
+            elif isinstance(cond, Logic):
+                result = not cond.product(entity)
+            else:
+                result = entity.is_false(cond) or (not entity.is_known(cond))
+        return result
 
 
 def parse_logic(script: str) -> Logic:
@@ -83,6 +88,8 @@ def parse_logic(script: str) -> Logic:
         cond = Or
     elif script[0] == "!":
         return Not(script[1:])
+    elif script[0] == "?":
+        return SoftNot(script[1:])
     else:
         return Is(script)
 
@@ -90,4 +97,4 @@ def parse_logic(script: str) -> Logic:
 
 
 if __name__ == "__main__":
-    print(parse_logic("a&!b|c"))
+    print(parse_logic("a & !b|c & ?c"))

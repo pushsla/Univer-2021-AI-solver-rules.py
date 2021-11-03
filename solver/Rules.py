@@ -1,12 +1,13 @@
 from solver.Logic import Logic, Is, parse_logic
 from solver.Entity import Entity
+from solver.Exceptions import *
 
 
 class Rule:
-    def __init__(self, condition, result):
+    def __init__(self, condition: [Logic, str], result: str):
         self.__condition = condition
         if not isinstance(condition, Logic):
-            self.__condition = Is(condition)
+            self.__condition = parse_logic(condition)
 
         self.__result = result
 
@@ -19,8 +20,11 @@ class Rule:
         return self.__condition
 
     def product(self, entity: Entity):
-        if self.__condition.product(entity):
-            entity.add_attr(self.__result)
+        try:
+            if self.__condition.product(entity):
+                entity.set_known(self.__result)
+        except AxiomException:
+            raise RuleConflictException("{} result conflicts with {} entity".format(self, entity))
 
     def __repr__(self):
         return "{} -> {}".format(self.__condition, self.__result)

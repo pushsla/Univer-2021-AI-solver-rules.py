@@ -15,14 +15,14 @@ class Solver:
     def solve(self, entity: [Entity, set]) -> Entity:
         entity = entity if isinstance(entity, Entity) else Entity(entity)
 
-        cached = entity.attrs
+        cached = entity.known_attrs
         while True:
             for rule in self.__rules:
                 rule.product(entity)
-            if cached == entity.attrs:
+            if cached == entity.known_attrs:
                 break
             else:
-                cached = entity.attrs
+                cached = entity.known_attrs
         return entity
 
     @property
@@ -47,14 +47,16 @@ class Solver:
 if __name__ == "__main__":
     s1 = Solver()
 
-    s1.add_rule(Rule(1, 2))
-    s1.add_rule(Rule(Or(2, 3), 4))
-    s1.add_rule(Rule(5, 4))
-    s1.add_rule(Rule(4, 5))
+    s1.add_rule(Rule("a", "b"))
+    s1.add_rule(Rule(Or("b", "c"), "d"))
+    s1.add_rule(Rule("e", "d"))
+    s1.add_rule(Rule("d", "!e"))
 
     print(s1)
 
-    e = Entity({1})
+    e = Entity({"a"})
     s1.solve(e)
 
-    print(e.attrs)
+    print(e.true_attrs)
+    print(e.false_attrs)
+    print(e)
