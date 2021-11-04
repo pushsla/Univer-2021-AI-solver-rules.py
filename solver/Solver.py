@@ -6,18 +6,20 @@ from solver.Entity import Entity
 class Solver:
     def __init__(self):
         self.__rules: set[Rule] = set()
+        self.__rulechain: list[Rule] = list()  # BE CAREFUL! Do not use self.__rulechain.__contains__()
 
     def add_rule(self, rule: [Rule, str]):
         rule = rule if isinstance(rule, Rule) else parse_rule(rule)
         self.__rules |= rule.simplify()
         self.__rebuild_rules(rule.result)
+        self.__rebuild_rulechain()
 
     def solve(self, entity: [Entity, set]) -> Entity:
         entity = entity if isinstance(entity, Entity) else Entity(entity)
 
         cached = entity.known_attrs
         while True:
-            for rule in self.__rules:
+            for rule in self.__rulechain:
                 rule.product(entity)
             if cached == entity.known_attrs:
                 break
@@ -27,7 +29,11 @@ class Solver:
 
     @property
     def rules(self):
-        return self.__rules
+        return self.__rules.copy()
+
+    @property
+    def rulechain(self):
+        return self.__rulechain.copy()
 
     def __rebuild_rules(self, result):
         matched_rules = set(filter(lambda x: x.result == result, self.__rules))
@@ -36,6 +42,19 @@ class Solver:
 
             self.__rules.difference_update(matched_rules)
             self.__rules.add(new_rule)
+
+    def __rebuild_rulechain(self):
+        self.__rulechain = []
+
+        for rule in self.__rules:
+            index = len(self.__rulechain)+1
+            for i, subrule in enumerate(self.__rulechain):
+                if subrule.result.startswith(rule.result):
+                    index = i
+                    break
+                elif subrule.result in rule.condition.used_axioms:
+                    index = i
+            self.__rulechain.insert(index, rule)
 
     def __repr__(self):
         result = ""
@@ -47,12 +66,17 @@ class Solver:
 if __name__ == "__main__":
     s1 = Solver()
 
-    s1.add_rule(Rule("a", "b"))
     s1.add_rule(Rule(Or("b", "c"), "d"))
+    s1.add_rule("b.pattern -> b.pattern.subpattern.subsubpattern")
     s1.add_rule(Rule("e", "d"))
-    s1.add_rule(Rule("d", "!e"))
+    s1.add_rule(Rule("d", "c"))
+    s1.add_rule("b.pattern -> b.pattern.subpattern")
+    s1.add_rule("d -> b.pattern")
+    s1.add_rule("b.pattern -> !b.false_pattern")
+    s1.add_rule(Rule("a", "b"))
 
     print(s1)
+    print(s1._Solver__rulechain)
 
     e = Entity({"a"})
     s1.solve(e)

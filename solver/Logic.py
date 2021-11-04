@@ -21,6 +21,17 @@ class Logic(Producting):
     def conditions(self) -> set:
         return set(self._conditions.copy())
 
+    @property
+    def used_axioms(self) -> set:
+        result = set()
+        for cond in self._conditions:
+            if isinstance(cond, Logic):
+                result.update(cond.used_axioms)
+            else:
+                result.add(cond)
+
+        return result
+
     def _product(self, entity: Entity) -> bool:
         raise NotImplementedError()
 
@@ -105,4 +116,5 @@ def parse_logic(script: str) -> Logic:
 
 
 if __name__ == "__main__":
-    print(parse_logic("a & !b|c & ?c"))
+    print(l := parse_logic("a & !b|c & ?c"))
+    print(l.used_axioms)
