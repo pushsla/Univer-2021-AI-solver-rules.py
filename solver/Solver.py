@@ -21,6 +21,7 @@ class Solver:
         solve_trace = []
 
         cached = entity.known_attrs
+        rule = None
         try:
             while True:
                 for rule in self.__rulechain:
@@ -31,7 +32,8 @@ class Solver:
                 else:
                     cached = entity.known_attrs
         except RuleConflictException as e:
-            solve_trace.append(rule)
+            if rule:
+                solve_trace.append(rule)
             raise SolverConflictException(' '.join(e.args), solve_trace, entity_for_trace)
         return entity
 
