@@ -1,7 +1,4 @@
-from typing import Callable
-
 from solver.Entity import Entity
-from solver.Exceptions import AxiomException
 
 
 class Producting:
@@ -19,7 +16,7 @@ class Logic(Producting):
 
     @property
     def conditions(self) -> set:
-        return set(self._conditions.copy())
+        return set(self._conditions)
 
     @property
     def used_axioms(self) -> set:

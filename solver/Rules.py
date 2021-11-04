@@ -1,6 +1,6 @@
-from solver.Logic import Logic, Is, parse_logic
 from solver.Entity import Entity
 from solver.Exceptions import *
+from solver.Logic import Logic, parse_logic
 
 
 class Rule:

@@ -31,10 +31,10 @@ class Solver:
                     break
                 else:
                     cached = entity.known_attrs
-        except RuleConflictException as e:
+        except RuleConflictException as err:
             if rule:
                 solve_trace.append(rule)
-            raise SolverConflictException(' '.join(e.args), solve_trace, entity_for_trace)
+            raise SolverConflictException(' '.join(err.args), solve_trace, entity_for_trace)
         return entity
 
     @property

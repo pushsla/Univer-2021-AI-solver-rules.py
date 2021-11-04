@@ -1,5 +1,4 @@
 from solver.Solver import Solver
-from solver.Rules import Rule
 
 """
 Предметная область: языки программирования
