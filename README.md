@@ -195,7 +195,7 @@ Or(And(Not('typed',), Not('compiling',)), Is('script',)) -> python
 ```
 
 
-При возникновении противоречия возникает исключение *RuleConflictException*
+При возникновении противоречия в ходе решения возникает исключение *SolverConflictException*
 ```python
 slv.add_rule("a -> !b")
 slv.add_rule(Rule("a", "b"))
@@ -203,5 +203,5 @@ slv.add_rule(Rule("a", "b"))
 slv.solve({'a'})
 ```
 ```
-solver.Exceptions.RuleConflictException: Is('a',) -> b result conflicts with {'a', '!b'} entity
+solver.Exceptions.RuleConflictException: Is('a',) -> b result conflicts with {'a', '!b'} entity; start: {'a'}; rule trace: ["Is('a') -> !b", "Is('a') -> b"]
 ```
