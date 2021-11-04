@@ -1,6 +1,7 @@
 from solver.Rules import Rule, parse_rule
 from solver.Logic import *
 from solver.Entity import Entity
+from solver.Exceptions import *
 
 
 class Solver:
@@ -16,15 +17,22 @@ class Solver:
 
     def solve(self, entity: [Entity, set]) -> Entity:
         entity = entity if isinstance(entity, Entity) else Entity(entity)
+        entity_for_trace = entity.known_attrs
+        solve_trace = []
 
         cached = entity.known_attrs
-        while True:
-            for rule in self.__rulechain:
-                rule.product(entity)
-            if cached == entity.known_attrs:
-                break
-            else:
-                cached = entity.known_attrs
+        try:
+            while True:
+                for rule in self.__rulechain:
+                    if rule.product(entity):
+                        solve_trace.append(rule.__repr__())
+                if cached == entity.known_attrs:
+                    break
+                else:
+                    cached = entity.known_attrs
+        except RuleConflictException as e:
+            solve_trace.append(rule)
+            raise SolverConflictException(' '.join(e.args), solve_trace, entity_for_trace)
         return entity
 
     @property
@@ -72,6 +80,7 @@ if __name__ == "__main__":
     s1.add_rule(Rule("d", "c"))
     s1.add_rule("b.pattern -> b.pattern.subpattern")
     s1.add_rule("d -> b.pattern")
+    s1.add_rule("d -> !b.pattern")
     s1.add_rule("b.pattern -> !b.false_pattern")
     s1.add_rule(Rule("a", "b"))
 

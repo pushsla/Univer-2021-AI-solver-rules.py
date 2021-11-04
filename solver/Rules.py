@@ -26,12 +26,15 @@ class Rule:
     def condition(self):
         return self.__condition
 
-    def product(self, entity: Entity):
+    def product(self, entity: Entity) -> bool:
         try:
             if self.__condition.product(entity):
                 entity.set_known(self.__result)
+                return True
         except AxiomException:
             raise RuleConflictException("{} result conflicts with {} entity".format(self, entity))
+
+        return False
 
     def __repr__(self):
         return "{} -> {}".format(self.__condition, self.__result)
